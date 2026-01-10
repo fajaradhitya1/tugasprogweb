@@ -68,6 +68,28 @@ export const Login = async (req, res) => {
     }
 };
 
+export const forgot = async (req, res) => {
+  const { id, name ,email, password, confPassword} = req.body;
+  if (password !== confPassword)
+      return res
+          .status(400)
+          .json({ msg: `Password dan Confirm Password tidak cocok`});
+  const salt = await bcrypt.genSalt();
+  const hashPassword = await bcrypt.hash(password, salt);
+  try {
+      await Users.update({
+          name: name,
+          email: email,
+          password: hashPassword,
+      },{where: {id}
+    });
+      res.json({ smg: 'Update Berhasil'})
+  } catch (error){
+      console.log(error);
+  }
+
+};
+
 
 export const Logout = async (req, res) => {
     try {
@@ -138,4 +160,18 @@ export const Logout = async (req, res) => {
         message: 'Terjadi kesalahan pada server saat logout',
       });
     }
+  };
+
+  export const deleteUser = async (req, res) => {
+    const { id } = req.body;
+    try {
+          await Users.destroy({
+           where: {id}
+        });
+        res.json({ smg: 'Delete Berhasil'})
+    } catch (error){
+        console.log(error);
+        res.status(500).json({msg:"user tidak ditemukan"});
+    }
+  
   };
